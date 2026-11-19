@@ -206,7 +206,7 @@
     padding: 14px 22px; box-shadow: 4px 4px 0 #fff; transition: transform .15s, box-shadow .15s;
   }
   .cta:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #fff; }
-  .slider { aspect-ratio: 2 / 1; outline: none; }
+  .slider { aspect-ratio: 16 / 10; outline: none; }
   .slider:focus-visible { border-color: var(--lime); }
   /* Vertical slide transition: incoming pushes up over the outgoing, which recedes (scale + dim). --d = +1 next / -1 prev */
   .slider { --d: 1; --ease: cubic-bezier(.76, 0, .18, 1); }
@@ -239,15 +239,30 @@
   .slider:hover .nav, .slider:focus-within .nav { opacity: 1; }
   .nav:hover { border-color: var(--lime); color: var(--lime); }
   @media (hover: none) { .nav { opacity: 1; } }
-  .timer { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 3; background: #ffffff14; }
+  .timer { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 4; background: #ffffff14; }
   .timer > div { height: 100%; width: 0; background: var(--lime); }
   .dots { display: flex; gap: 6px; flex-wrap: wrap; margin-top: -8px; }
   .dot { width: 22px; height: 8px; padding: 0; border: 0; cursor: pointer; background: #2a2a2a; transition: background .2s, width .2s; }
   .dot.gap { margin-left: 8px; }
   .dot:hover { background: #555; }
   .dot[aria-selected="true"] { background: var(--lime); width: 34px; }
-  .pinfo { display: flex; flex-direction: column; gap: 12px; min-height: 9.5em; overflow: hidden; }
   .ad-brand .name { overflow: hidden; }
+  /* Banner caption: product name + short hook over every slide */
+  .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; pointer-events: none;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px; overflow: hidden;
+    padding: 70px 24px 24px;
+    background: linear-gradient(to top, rgba(0,0,0,.92) 0%, rgba(0,0,0,.6) 50%, transparent 100%);
+  }
+  .cap b { font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 900; line-height: 1; letter-spacing: -.5px; text-shadow: 0 2px 18px #000; }
+  .cap b span { color: var(--lime); }
+  .cap em {
+    font-style: normal; font-weight: 700; font-size: clamp(.95rem, 1.45vw, 1.2rem); line-height: 1.25;
+    color: #000; background: var(--lime); padding: 6px 10px; box-shadow: 4px 4px 0 #000;
+  }
+  .brand-card { background: radial-gradient(circle at 50% 34%, #2daff740, transparent 58%), linear-gradient(160deg, #071823, #03090d); }
+  .brand-card img { position: absolute; left: 50%; top: 12%; width: auto; height: 48%; object-fit: contain; transform: translateX(-50%) scale(.92); filter: drop-shadow(0 0 30px #2daff766); }
+  .brand-card.on img { transform: translateX(-50%) scale(1); }
   .ctas { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
   .ctas .cta { align-self: auto; }
   .portfolio-link { color: var(--lime); font-size: 13px; font-weight: 600; text-decoration: none; }
@@ -335,7 +350,7 @@
       </div>
     </div>
 
-    <div class="screen slider" id="slider" aria-roledescription="carousel" aria-label="BloomTech product screenshots" tabindex="0">
+    <div class="screen slider" id="slider" aria-roledescription="carousel" aria-label="BloomTech products" tabindex="0">
       <div class="hudmini" id="slideHud">BLOOMAUDIT · 1/5</div>
       <figure class="slide on" data-p="audit"><img src="/assets/products/bloomaudit-1.webp" alt="BloomAudit dashboard" /></figure>
       <figure class="slide" data-p="audit"><img src="/assets/products/bloomaudit-2.webp" alt="BloomAudit screen" loading="lazy" /></figure>
@@ -347,16 +362,14 @@
       <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-server-rack.webp" alt="Server rack" loading="lazy" /></figure>
       <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-editing-timeline.webp" alt="Video editing timeline on a monitor" loading="lazy" /></figure>
       <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-datacenter-aisle.webp" alt="Engineer checking equipment in a data center aisle" loading="lazy" /></figure>
+      <figure class="slide brand-card" data-p="suwela"><img src="/assets/products/suwela-emblem.png" alt="Suwela Medical Hub emblem" loading="lazy" /></figure>
+      <div class="cap" id="cap"><b id="capName">Bloom<span>Audit</span></b><em id="capHook">Finance, HR &amp; payroll. One platform.</em></div>
       <button class="nav prev" type="button" aria-label="Previous slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l5-5 5 5"/></svg></button>
       <button class="nav next" type="button" aria-label="Next slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg></button>
       <div class="timer"><div id="slideBar"></div></div>
     </div>
     <div class="dots" id="dots" role="tablist" aria-label="Choose slide"></div>
 
-    <div class="pinfo" id="pInfo" aria-live="polite">
-      <h3 id="pTag">The smarter way to run your <span>business finances.</span></h3>
-      <p id="pDesc">An all-in-one finance platform covering accounting, HR, payroll, inventory and projects, with a native US payroll engine and full Sri Lankan payroll compliance.</p>
-    </div>
     <div class="ctas">
       <a class="cta" id="pCta" href="https://bloomaudit.com" target="_blank" rel="noopener">Explore BloomAudit →</a>
       <a class="portfolio-link" href="https://bloomtech.lk/portfolio" target="_blank" rel="noopener">See our full portfolio →</a>
@@ -464,19 +477,18 @@
   // BloomTech products slideshow
   (function slideshow() {
     const PRODUCTS = {
-      audit: { name: ['Bloom', 'Audit'], hud: 'BLOOMAUDIT', url: 'https://bloomaudit.com',
-        tag: 'The smarter way to run your <span>business finances.</span>',
-        desc: 'An all-in-one finance platform covering accounting, HR, payroll, inventory and projects, with a native US payroll engine and full Sri Lankan payroll compliance.' },
-      pos: { name: ['Bloom', 'Swift POS'], hud: 'BLOOMSWIFT POS', url: 'https://bloomswiftpos.com',
-        tag: 'Sell faster. <span>Track every item.</span>',
-        desc: 'A complete point of sale solution for retail, hospitality and enterprise. Simplify your sales, track your stock and grow your business faster.' },
-      lto: { name: ['Bloom', 'LTO'], hud: 'BLOOMLTO', url: 'https://bloomlto.com',
-        tag: 'Make your tape library <span>searchable.</span>',
-        desc: 'BloomLTO archives files from your server to LTO tape, indexes every one in a database, and restores any file on request.' }
+      audit:  { name: ['Bloom', 'Audit'], hud: 'BLOOMAUDIT', url: 'https://bloomaudit.com', cta: 'BloomAudit',
+                hook: 'Finance, HR &amp; payroll. One platform.' },
+      pos:    { name: ['Bloom', 'Swift POS'], hud: 'BLOOMSWIFT POS', url: 'https://bloomswiftpos.com', cta: 'BloomSwift POS',
+                hook: 'Sell faster. Track every item.' },
+      lto:    { name: ['Bloom', 'LTO'], hud: 'BLOOMLTO', url: 'https://bloomlto.com', cta: 'BloomLTO',
+                hook: 'Your tape archive, searchable.' },
+      suwela: { name: ['Suwela', ' Medical Hub'], hud: 'SUWELA', url: 'https://www.suwela.com', cta: 'Suwela',
+                hook: 'One connected health record.' }
     };
     const DELAY = 4500;
     const slider = $('slider'), slides = [...slider.querySelectorAll('.slide')], dotsEl = $('dots'), bar = $('slideBar');
-    const info = $('pInfo'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let i = 0, cur = 'audit', paused = false, elapsed = 0, last = performance.now();
 
     const dots = slides.map((s, n) => {
@@ -491,12 +503,12 @@
       const p = PRODUCTS[key];
       const apply = () => {
         $('pName').innerHTML = `${p.name[0]}<span>${p.name[1]}</span>`;
-        $('pTag').innerHTML = p.tag; $('pDesc').textContent = p.desc;
-        const c = $('pCta'); c.href = p.url; c.textContent = `Explore ${p.name.join('')} →`;
+        $('capName').innerHTML = `${p.name[0]}<span>${p.name[1]}</span>`; $('capHook').innerHTML = p.hook;
+        const c = $('pCta'); c.href = p.url; c.textContent = `Explore ${p.cta} →`;
       };
-      if (reduce || !info.animate) return apply();
+      if (reduce || !Element.prototype.animate) return apply();
       // Text rolls up out, then the new copy rolls up in (staggered), matching the slide direction
-      const els = [$('pName'), $('pTag'), $('pDesc'), $('pCta')];
+      const els = [$('capName'), $('capHook'), $('pName'), $('pCta')];
       const out = els.map((el, k) => el.animate(
         [{ transform: 'none', opacity: 1 }, { transform: `translateY(${-dir * 18}px)`, opacity: 0 }],
         { duration: 320, delay: k * 40, easing: 'cubic-bezier(.6,0,.4,1)', fill: 'forwards' }));
