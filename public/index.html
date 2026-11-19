@@ -55,6 +55,16 @@
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   }
+  /* Final 60 seconds: ads fade away, countdown takes the full page */
+  .ad { transition: opacity .6s ease, transform .6s ease; }
+  .layout.final-out .ad { opacity: 0; transform: translateX(40px); pointer-events: none; }
+  .layout.final { grid-template-columns: minmax(0, 1fr); }
+  .layout.final .ad { display: none; }
+  .layout.final .stage { animation: stageIn .8s cubic-bezier(.2,.8,.2,1) both; }
+  .layout.final .num { font-size: clamp(5rem, 15vw, 15rem); }
+  .layout.final .sep { font-size: clamp(3.6rem, 10vw, 10rem); }
+  .layout.final .progress { width: min(820px, 100%); }
+  @keyframes stageIn { from { opacity: .4; transform: scale(.96); } to { opacity: 1; transform: none; } }
 
   /* ---------- LEFT: countdown in a camera viewfinder ---------- */
   .stage {
@@ -177,28 +187,12 @@
     background: #000; border: 2px solid #222; overflow: hidden;
     box-shadow: 8px 8px 0 var(--lime-dim);
   }
-  .screen video, .screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; object-fit: cover; }
   .screen .hudmini {
     position: absolute; top: 10px; left: 12px; z-index: 3; pointer-events: none;
     font-family: 'Press Start 2P', monospace; font-size: 8px; color: #fff; display: flex; gap: 8px; align-items: center;
     text-shadow: 0 1px 2px #000;
   }
   .screen .hudmini::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: blink 1s steps(1) infinite; }
-  .mute-btn {
-    position: absolute; right: 10px; bottom: 10px; z-index: 3;
-    font: 600 11px Poppins, sans-serif; letter-spacing: 1px; text-transform: uppercase;
-    background: rgba(0,0,0,.7); color: #fff; border: 1px solid #444; padding: 7px 10px; cursor: pointer;
-  }
-  .mute-btn:hover { border-color: var(--lime); color: var(--lime); }
-  .screen-fallback {
-    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 10px; text-align: center; padding: 20px;
-    background:
-      radial-gradient(circle at 30% 30%, #b7cb4522, transparent 60%),
-      repeating-linear-gradient(45deg, #0b0b0b 0 12px, #0f0f0f 12px 24px);
-  }
-  .screen-fallback b { font-size: 1.4rem; font-weight: 800; }
-  .screen-fallback small { color: var(--muted); }
 
   .ad h3 { font-size: clamp(1.25rem, 1.9vw, 1.7rem); font-weight: 800; line-height: 1.2; }
   .ad h3 span { color: var(--lime); }
@@ -212,6 +206,52 @@
     padding: 14px 22px; box-shadow: 4px 4px 0 #fff; transition: transform .15s, box-shadow .15s;
   }
   .cta:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #fff; }
+  .slider { aspect-ratio: 2 / 1; outline: none; }
+  .slider:focus-visible { border-color: var(--lime); }
+  /* Vertical slide transition: incoming pushes up over the outgoing, which recedes (scale + dim). --d = +1 next / -1 prev */
+  .slider { --d: 1; --ease: cubic-bezier(.76, 0, .18, 1); }
+  .slide {
+    position: absolute; inset: 0; margin: 0; overflow: hidden; visibility: hidden;
+    transform: translate3d(0, calc(var(--d) * 100%), 0);
+    transition: transform .9s var(--ease), filter .9s var(--ease), opacity .9s var(--ease), visibility 0s .9s;
+    will-change: transform;
+  }
+  .slide.on { visibility: visible; transform: none; z-index: 2; transition-delay: 0s; box-shadow: 0 calc(var(--d) * -18px) 40px #000c; }
+  .slide.leave {
+    visibility: visible; z-index: 1; transition-delay: 0s;
+    transform: translate3d(0, calc(var(--d) * -22%), 0) scale(.9);
+    filter: brightness(.35) blur(2px); opacity: .6;
+  }
+  .slide.snap { transition: none !important; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; transform: scale(1.08); transition: transform 6s cubic-bezier(.2, .6, .3, 1); }
+  .slide.on img { transform: scale(1); }
+  .slide.photo img { object-position: center; }
+  .slider .hudmini { background: rgba(0,0,0,.65); padding: 6px 8px; }
+  .nav {
+    position: absolute; right: 12px; z-index: 4;
+    width: 34px; height: 34px; display: grid; place-items: center; cursor: pointer; padding: 0;
+    background: rgba(0,0,0,.6); color: #fff; border: 1px solid #444; backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .25s, border-color .2s, color .2s, transform .2s;
+  }
+  .nav svg { width: 16px; height: 16px; }
+  .nav.prev { top: calc(50% - 38px); } .nav.next { top: calc(50% + 4px); }
+  .nav.prev:hover { transform: translateY(-2px); } .nav.next:hover { transform: translateY(2px); }
+  .slider:hover .nav, .slider:focus-within .nav { opacity: 1; }
+  .nav:hover { border-color: var(--lime); color: var(--lime); }
+  @media (hover: none) { .nav { opacity: 1; } }
+  .timer { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; z-index: 3; background: #ffffff14; }
+  .timer > div { height: 100%; width: 0; background: var(--lime); }
+  .dots { display: flex; gap: 6px; flex-wrap: wrap; margin-top: -8px; }
+  .dot { width: 22px; height: 8px; padding: 0; border: 0; cursor: pointer; background: #2a2a2a; transition: background .2s, width .2s; }
+  .dot.gap { margin-left: 8px; }
+  .dot:hover { background: #555; }
+  .dot[aria-selected="true"] { background: var(--lime); width: 34px; }
+  .pinfo { display: flex; flex-direction: column; gap: 12px; min-height: 9.5em; overflow: hidden; }
+  .ad-brand .name { overflow: hidden; }
+  .ctas { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .ctas .cta { align-self: auto; }
+  .portfolio-link { color: var(--lime); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .portfolio-link:hover { text-decoration: underline; }
 
   @media (max-width: 980px) {
     .layout { grid-template-columns: minmax(0, 1fr); }
@@ -232,6 +272,7 @@
     .ad ul { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
+    .slide, .slide img { transition: none !important; transform: none !important; filter: none !important; }
     *, *::before { animation: none !important; transition: none !important; }
   }
 </style>
@@ -283,33 +324,43 @@
     </div>
   </section>
 
-  <!-- RIGHT: BloomAudit ad -->
-  <aside class="ad" aria-label="Sponsored: BloomAudit">
-    <span class="ad-tag">WHILE YOU WAIT</span>
+  <!-- RIGHT: BloomTech products slideshow (images & copy: https://bloomtech.lk/portfolio) -->
+  <aside class="ad" aria-label="Sponsored: BloomTech products">
+    <span class="ad-tag">WHILE YOU WAIT · OUR PRODUCTS</span>
     <div class="ad-brand">
       <img src="/assets/bloomtech-logo.png" alt="" />
       <div>
-        <div class="name">Bloom<span>Audit</span></div>
+        <div class="name" id="pName">Bloom<span>Audit</span></div>
         <div class="by">by BloomTech LK</div>
       </div>
     </div>
 
-    <div class="screen" id="screen">
-      <div class="screen-fallback" id="fallback">
-        <b>Bloom<span style="color:var(--lime)">Audit</span></b>
-        <small>IT Audit &amp; Compliance, simplified.</small>
-      </div>
+    <div class="screen slider" id="slider" aria-roledescription="carousel" aria-label="BloomTech product screenshots" tabindex="0">
+      <div class="hudmini" id="slideHud">BLOOMAUDIT · 1/5</div>
+      <figure class="slide on" data-p="audit"><img src="/assets/products/bloomaudit-1.webp" alt="BloomAudit dashboard" /></figure>
+      <figure class="slide" data-p="audit"><img src="/assets/products/bloomaudit-2.webp" alt="BloomAudit screen" loading="lazy" /></figure>
+      <figure class="slide" data-p="audit"><img src="/assets/products/bloomaudit-3.webp" alt="BloomAudit screen" loading="lazy" /></figure>
+      <figure class="slide" data-p="audit"><img src="/assets/products/bloomaudit-4.webp" alt="BloomAudit screen" loading="lazy" /></figure>
+      <figure class="slide" data-p="audit"><img src="/assets/products/bloomaudit-5.webp" alt="BloomAudit screen" loading="lazy" /></figure>
+      <figure class="slide" data-p="pos"><img src="/assets/products/bloomswift-pos.webp" alt="BloomSwift POS payment screen" loading="lazy" /></figure>
+      <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-patch-panel.webp" alt="Network patch panel with neatly routed cables" loading="lazy" /></figure>
+      <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-server-rack.webp" alt="Server rack" loading="lazy" /></figure>
+      <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-editing-timeline.webp" alt="Video editing timeline on a monitor" loading="lazy" /></figure>
+      <figure class="slide photo" data-p="lto"><img src="/assets/products/bloomlto-datacenter-aisle.webp" alt="Engineer checking equipment in a data center aisle" loading="lazy" /></figure>
+      <button class="nav prev" type="button" aria-label="Previous slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l5-5 5 5"/></svg></button>
+      <button class="nav next" type="button" aria-label="Next slide"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg></button>
+      <div class="timer"><div id="slideBar"></div></div>
     </div>
+    <div class="dots" id="dots" role="tablist" aria-label="Choose slide"></div>
 
-    <h3>IT audits &amp; compliance — <span>automated.</span></h3>
-    <p>BloomAudit helps organizations track, assess and report on IT infrastructure and business processes, with automated compliance reporting and real-time audit trails.</p>
-    <ul>
-      <li>Automated compliance reports</li>
-      <li>Real-time audit trails</li>
-      <li>Infrastructure assessments</li>
-      <li>Process tracking</li>
-    </ul>
-    <a class="cta" href="https://bloomtech.lk/services/bloomaudit" target="_blank" rel="noopener">Explore BloomAudit →</a>
+    <div class="pinfo" id="pInfo" aria-live="polite">
+      <h3 id="pTag">The smarter way to run your <span>business finances.</span></h3>
+      <p id="pDesc">An all-in-one finance platform covering accounting, HR, payroll, inventory and projects, with a native US payroll engine and full Sri Lankan payroll compliance.</p>
+    </div>
+    <div class="ctas">
+      <a class="cta" id="pCta" href="https://bloomaudit.com" target="_blank" rel="noopener">Explore BloomAudit →</a>
+      <a class="portfolio-link" href="https://bloomtech.lk/portfolio" target="_blank" rel="noopener">See our full portfolio →</a>
+    </div>
   </aside>
 </main>
 
@@ -324,9 +375,6 @@
   // 7:20 PM Sri Lanka time (UTC+05:30)
   const LAUNCH = new Date('2026-11-19T19:20:00+05:30').getTime();
   const REDIRECT_URL = 'https://pixelpartylk.com/';
-  // BloomAudit video: a YouTube link (watch / youtu.be / shorts / embed) OR a direct .mp4 URL / '/assets/bloomaudit.mp4'.
-  // Leave empty to show the branded placeholder.
-  const BLOOMAUDIT_VIDEO = '';
   /* ========================================== */
 
   // Allow testing: ?t=15 => launch in 15 seconds
@@ -368,10 +416,24 @@
     setTimeout(() => location.replace(REDIRECT_URL), 2200);
   }
 
+  // Last 60 seconds: hide the BloomTech products panel, countdown goes full page
+  const FINAL_MS = 60 * 1000;
+  let finalOn = false;
+  function finalCountdown() {
+    if (finalOn) return; finalOn = true;
+    const layout = document.querySelector('.layout'), ad = document.querySelector('.ad');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    ad.setAttribute('aria-hidden', 'true');
+    if (reduce || getComputedStyle(ad).display === 'none') { layout.classList.add('final'); return; }
+    layout.classList.add('final-out');
+    setTimeout(() => layout.classList.add('final'), 600);
+  }
+
   function update() {
     const n = now();
     let diff = target - n;
     if (diff <= 0) { ['d','h','m','s'].forEach(k => set(els[k], '00')); $('bar').style.width = '100%'; goLive(); return; }
+    if (diff <= FINAL_MS) finalCountdown();
     const t = Math.floor(diff / 1000);
     const days = Math.floor(t / 86400);
     $('dUnit').hidden = $('dSep').hidden = days === 0;
@@ -399,23 +461,105 @@
     requestAnimationFrame(tc);
   })();
 
-  // BloomAudit video
-  (function video() {
-    const url = BLOOMAUDIT_VIDEO.trim();
-    if (!url) return;
-    const screen = $('screen');
-    const yt = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-    const hud = '<div class="hudmini">BLOOMAUDIT</div>';
-    if (yt) {
-      const id = yt[1];
-      screen.innerHTML = hud + `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=1&rel=0&modestbranding=1&playsinline=1" title="BloomAudit video" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-    } else {
-      screen.insertAdjacentHTML('beforeend', hud + `<video src="${url}" autoplay muted loop playsinline preload="metadata"></video><button class="mute-btn" type="button">🔊 Sound on</button>`);
-      const v = screen.querySelector('video'), b = screen.querySelector('.mute-btn');
-      v.addEventListener('loadeddata', () => $('fallback').remove(), { once: true });
-      v.addEventListener('error', () => { v.remove(); b.remove(); });
-      b.addEventListener('click', () => { v.muted = !v.muted; b.textContent = v.muted ? '🔊 Sound on' : '🔇 Mute'; if (!v.muted) v.play(); });
+  // BloomTech products slideshow
+  (function slideshow() {
+    const PRODUCTS = {
+      audit: { name: ['Bloom', 'Audit'], hud: 'BLOOMAUDIT', url: 'https://bloomaudit.com',
+        tag: 'The smarter way to run your <span>business finances.</span>',
+        desc: 'An all-in-one finance platform covering accounting, HR, payroll, inventory and projects, with a native US payroll engine and full Sri Lankan payroll compliance.' },
+      pos: { name: ['Bloom', 'Swift POS'], hud: 'BLOOMSWIFT POS', url: 'https://bloomswiftpos.com',
+        tag: 'Sell faster. <span>Track every item.</span>',
+        desc: 'A complete point of sale solution for retail, hospitality and enterprise. Simplify your sales, track your stock and grow your business faster.' },
+      lto: { name: ['Bloom', 'LTO'], hud: 'BLOOMLTO', url: 'https://bloomlto.com',
+        tag: 'Make your tape library <span>searchable.</span>',
+        desc: 'BloomLTO archives files from your server to LTO tape, indexes every one in a database, and restores any file on request.' }
+    };
+    const DELAY = 4500;
+    const slider = $('slider'), slides = [...slider.querySelectorAll('.slide')], dotsEl = $('dots'), bar = $('slideBar');
+    const info = $('pInfo'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let i = 0, cur = 'audit', paused = false, elapsed = 0, last = performance.now();
+
+    const dots = slides.map((s, n) => {
+      const d = document.createElement('button');
+      d.type = 'button'; d.className = 'dot' + (n && s.dataset.p !== slides[n - 1].dataset.p ? ' gap' : '');
+      d.setAttribute('role', 'tab'); d.setAttribute('aria-label', `${PRODUCTS[s.dataset.p].hud} slide ${n + 1}`);
+      d.addEventListener('click', () => go(n));
+      dotsEl.appendChild(d); return d;
+    });
+
+    function setProduct(key) {
+      const p = PRODUCTS[key];
+      const apply = () => {
+        $('pName').innerHTML = `${p.name[0]}<span>${p.name[1]}</span>`;
+        $('pTag').innerHTML = p.tag; $('pDesc').textContent = p.desc;
+        const c = $('pCta'); c.href = p.url; c.textContent = `Explore ${p.name.join('')} →`;
+      };
+      if (reduce || !info.animate) return apply();
+      // Text rolls up out, then the new copy rolls up in (staggered), matching the slide direction
+      const els = [$('pName'), $('pTag'), $('pDesc'), $('pCta')];
+      const out = els.map((el, k) => el.animate(
+        [{ transform: 'none', opacity: 1 }, { transform: `translateY(${-dir * 18}px)`, opacity: 0 }],
+        { duration: 320, delay: k * 40, easing: 'cubic-bezier(.6,0,.4,1)', fill: 'forwards' }));
+      Promise.all(out.map(a => a.finished)).then(() => {
+        apply();
+        els.forEach((el, k) => {
+          out[k].cancel();
+          el.animate([{ transform: `translateY(${dir * 22}px)`, opacity: 0, filter: 'blur(4px)' }, { transform: 'none', opacity: 1, filter: 'blur(0)' }],
+            { duration: 520, delay: k * 60, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+        });
+      });
     }
+
+    let dir = 1;
+    function go(n, d) {
+      const next = (n + slides.length) % slides.length;
+      if (next !== i) {
+        dir = d || (next > i ? 1 : -1);
+        const prev = slides[i], inc = slides[next];
+        // reset every other slide and park the incoming one on the entry side, all without animating
+        const rest = slides.filter(s => s !== prev);
+        rest.forEach(s => { s.classList.add('snap'); s.classList.remove('on', 'leave'); });
+        slider.style.setProperty('--d', dir);
+        void slider.offsetWidth;
+        rest.forEach(s => s.classList.remove('snap'));
+        prev.classList.remove('on'); prev.classList.add('leave');
+        inc.classList.add('on');
+        i = next;
+      }
+      dots.forEach((d, k) => d.setAttribute('aria-selected', k === i));
+      const key = slides[i].dataset.p;
+      const same = slides.filter(s => s.dataset.p === key), pos = same.indexOf(slides[i]) + 1;
+      $('slideHud').textContent = `${PRODUCTS[key].hud} · ${pos}/${same.length}`;
+      if (key !== cur) { cur = key; setProduct(key); }
+      elapsed = 0;
+    }
+
+    slider.querySelector('.prev').addEventListener('click', () => go(i - 1, -1));
+    slider.querySelector('.next').addEventListener('click', () => go(i + 1, 1));
+    slider.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); go(i - 1, -1); }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); go(i + 1, 1); }
+    });
+    const pause = v => { paused = v; };
+    slider.addEventListener('mouseenter', () => pause(true));
+    slider.addEventListener('mouseleave', () => pause(false));
+    // swipe: up/left = next, down/right = previous
+    let p0 = null;
+    slider.addEventListener('touchstart', e => { p0 = [e.touches[0].clientX, e.touches[0].clientY]; }, { passive: true });
+    slider.addEventListener('touchend', e => {
+      if (!p0) return; const t = e.changedTouches[0], dx = t.clientX - p0[0], dy = t.clientY - p0[1]; p0 = null;
+      const m = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+      if (Math.abs(m) > 40) m < 0 ? go(i + 1, 1) : go(i - 1, -1);
+    });
+
+    (function loop(now) {
+      const dt = Math.min(100, now - last); last = now;   // clamp so a background tab doesn't skip slides
+      if (!paused) elapsed += dt;
+      bar.style.width = Math.min(100, elapsed / DELAY * 100) + '%';
+      if (elapsed >= DELAY) go(i + 1, 1);
+      requestAnimationFrame(loop);
+    })(performance.now());
+    go(0, 1);
   })();
 
   // Floating pixel particles
